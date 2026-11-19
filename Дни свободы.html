@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#121110">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Дни свободы">
+<title>Дни свободы</title>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,800;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#121110; --coal:#1c1a17; --ash:#6b6558; --bone:#d6c9a8; --ochre:#b98a2e;
+  --serif:"Alegreya","Georgia","Times New Roman",serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{min-height:100%}
+body{
+  background:radial-gradient(120% 90% at 70% 0%,#26231e 0%,var(--black) 62%);
+  background-color:var(--black);color:var(--bone);font-family:var(--serif);
+  padding:max(26px,env(safe-area-inset-top)) 24px max(26px,env(safe-area-inset-bottom));
+  display:flex;justify-content:center;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+main{width:100%;max-width:520px;display:flex;flex-direction:column;gap:30px;justify-content:center;min-height:100vh;position:relative}
+.defs{position:absolute;width:0;height:0}
+.hero{position:relative}
+.lead{font-style:italic;font-size:19px;color:var(--ash)}
+.num{display:block;width:100%;height:auto;margin-top:4px;position:relative;z-index:1;overflow:visible}
+.fig{position:absolute;right:-12px;top:-6px;width:50%;height:auto;opacity:.95}
+.unit{font-style:italic;font-weight:500;font-size:clamp(30px,9vw,42px);margin-top:-6px;position:relative;z-index:1}
+.clock{display:flex;gap:26px;font-style:italic;color:var(--ash);font-size:16px}
+.clock div{display:flex;flex-direction:column}
+.clock b{font-style:normal;font-weight:500;font-size:32px;color:var(--bone);font-variant-numeric:tabular-nums;line-height:1.1}
+.cap{font-style:italic;color:var(--ash);font-size:16px;margin-bottom:6px}
+.strokes{display:block;width:100%;height:auto}
+.foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:17px;font-style:italic;color:var(--ash)}
+.foot input{font:inherit;font-style:normal;color:var(--bone);background:transparent;border:0;border-bottom:1px solid var(--ash);padding:4px 2px;color-scheme:dark}
+.foot input:focus-visible{outline:2px solid var(--ochre);outline-offset:3px}
+.foot{margin-bottom:46px;flex-wrap:wrap}
+.dates{display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.num{cursor:pointer;-webkit-tap-highlight-color:transparent;outline:none}
+.shake{transform-origin:50% 60%;animation:wob .5s ease-in-out 4}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
+@media (prefers-reduced-motion:reduce){.shake{animation:none}}
+.fig{transform-origin:50% 100%;transition:transform 1s,filter 1s}
+.phrase{font-style:italic;font-size:clamp(20px,5.6vw,25px);line-height:1.3;color:var(--bone);max-width:30ch;min-height:1.3em}
+.prog{display:flex;flex-direction:column;gap:2px}
+.prog p{font-style:italic;color:var(--ash);font-size:16px}
+.pbar{display:block;width:100%;height:auto}
+.facts{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;font-size:18px;color:var(--bone)}
+.facts li::before{content:"";display:inline-block;width:14px;height:3px;background:var(--ochre);margin-right:10px;vertical-align:middle;opacity:.8}
+.sig{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));font-style:italic;font-size:15px;color:var(--ash);opacity:.85;pointer-events:none;z-index:5}
+</style>
+</head>
+<body>
+<svg class="defs" aria-hidden="true">
+  <filter id="paint" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03 0.055" numOctaves="3" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="18" xChannelSelector="R" yChannelSelector="G"/>
+    <feGaussianBlur stdDeviation="0.7"/>
+  </filter>
+  <filter id="bristle" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.05 0.35" numOctaves="2" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/>
+    <feGaussianBlur stdDeviation="0.5"/>
+  </filter>
+  <filter id="smear"><feGaussianBlur stdDeviation="4"/></filter>
+  <filter id="boil" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence id="tp" type="fractalNoise" baseFrequency="0.03 0.07" numOctaves="2" seed="11" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="bristleS" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.08 0.4" numOctaves="2" seed="9" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="3" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+</svg>
+
+<main>
+  <section class="hero">
+    <svg class="fig" viewBox="0 0 220 280" aria-hidden="true">
+      <g filter="url(#paint)">
+        <path d="M58 100 C26 132 22 208 48 264 L170 264 C180 202 172 136 142 102 Z" fill="#35322d"/>
+        <path d="M90 104 C72 144 74 204 86 264 L130 264 C124 204 128 144 132 104 Z" fill="#171613"/>
+        <path d="M52 124 C38 172 42 222 62 260" stroke="#6b6558" stroke-width="16" fill="none" stroke-linecap="round"/>
+        <path d="M72 100 C92 90 122 92 144 104" stroke="#b98a2e" stroke-width="11" fill="none" opacity=".75"/>
+        <ellipse cx="108" cy="68" rx="27" ry="33" transform="rotate(14 108 68)" fill="#8d7a52"/>
+        <path d="M96 62 C106 58 120 62 126 70 C118 80 104 82 94 76Z" fill="#12110e"/>
+      </g>
+    </svg>
+    <p class="lead" id="lead">До ухода осталось</p>
+    <svg class="num" id="numsvg" viewBox="0 0 330 200" role="button" tabindex="0" aria-labelledby="lead">
+      <g filter="url(#paint)">
+        <text id="shadow" x="0" y="172" fill="#000" opacity=".6" transform="translate(8 7)" style="filter:url(#smear)" font-family="Alegreya,Georgia,serif" font-weight="800" font-size="200"></text>
+        <text id="num" filter="url(#boil)" x="0" y="172" fill="#b98a2e" font-family="Alegreya,Georgia,serif" font-weight="800" font-size="200"></text>
+      </g>
+    </svg>
+    <p class="unit" id="unit"></p>
+  </section>
+
+  <p class="phrase" id="phrase"></p>
+
+  <section class="clock" id="clock" aria-hidden="true">
+    <div><b id="h">0</b><span>часов</span></div>
+    <div><b id="m">00</b><span>минут</span></div>
+    <div><b id="s">00</b><span>секунд</span></div>
+  </section>
+
+  <section>
+    <p class="cap">Каждый мазок — один день. Светлый — сегодня.</p>
+    <svg class="strokes" id="strokes" viewBox="0 0 330 56" aria-hidden="true"><g id="sg" filter="url(#bristle)"></g></svg>
+  </section>
+
+  <section class="prog" id="prog">
+    <p id="pct"></p>
+    <svg class="pbar" viewBox="0 0 320 24" aria-hidden="true"><g filter="url(#bristle)"><rect width="320" height="24" fill="none"/><rect x="0" y="9" width="320" height="6" rx="3" fill="#2a2722"/><rect id="pbar" x="0" y="8" width="0" height="8" rx="4" fill="#b98a2e"/></g></svg>
+  </section>
+
+  <ul class="facts" id="facts"><li id="f-hours"></li><li id="f-weeks"></li><li id="f-wk"></li></ul>
+
+  <div class="foot">
+    <span id="when"></span>
+    <div class="dates"><label>Дата ухода <input type="date" id="date"></label><label>Дембель <input type="date" id="ret"></label></div>
+  </div>
+</main>
+
+<div class="sig">by lacqqa</div>
+
+<script>
+const DEFAULT_DATE = "2026-12-14";
+const START_DEFAULT = "2026-11-19";
+const PHRASES = [
+  "Последний день. Не трать его на экран.",
+  "Два дня. Позвони тем, кому давно должен звонок.",
+  "Три дня. Всё, что откладывал, уже не подождёт.",
+  "Время не торгуется. Оно просто идёт.",
+  "Каждый вечер теперь весит больше обычного.",
+  "Запомни, как пахнет дом.",
+  "Неделя. Хороший срок, чтобы перестать откладывать.",
+  "Серое небо тоже считается за день.",
+  "Не всё нужно успеть. Что-то нужно просто прожить.",
+  "Тишина перед шагом. Не заглушай её.",
+  "Смотри на лица. Потом будешь вспоминать.",
+  "День, прожитый осознанно, длиннее трёх прожитых на автомате.",
+  "Усталость тоже часть свободы.",
+  "Две недели. Ещё есть место для хороших глупостей.",
+  "Дорога начинается задолго до вокзала.",
+  "Сегодня никто ничего от тебя не требует. Пользуйся.",
+  "Лучшее, что можно сделать с днём, это не пропустить его.",
+  "Обними тех, кто рядом, пока они рядом.",
+  "Мысли тяжелее вещей. Собирай сначала их.",
+  "Не считай, сколько прошло. Смотри, сколько ещё осталось.",
+  "Три недели. Хватит, чтобы начать и не закончить.",
+  "Всё идёт так, как идёт. Не торопи и не держи.",
+  "Утро тянется, неделя летит.",
+  "Свобода не заканчивается датой. Она меняет форму.",
+  "Двадцать пять дней. Звучит как много, пока не начнёшь их тратить."
+];
+const $ = id => document.getElementById(id);
+const NS = "http://www.w3.org/2000/svg";
+
+function loadDate(){ try { return localStorage.getItem("leaveDate") || DEFAULT_DATE; } catch(e){ return DEFAULT_DATE; } }
+function saveDate(v){ try { localStorage.setItem("leaveDate", v); } catch(e){} }
+let target = loadDate(), shown = null;
+
+function plural(n, f){
+  const a = Math.abs(n) % 100, b = a % 10;
+  if (a > 10 && a < 20) return f[2];
+  if (b > 1 && b < 5) return f[1];
+  if (b === 1) return f[0];
+  return f[2];
+}
+const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); };
+const rnd = i => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); };
+
+let cur = {t: "", s: 200}, tapT = null;
+function setBig(text, size){
+  cur = {t: text, s: size};
+  if (!tapT) paintBig(text, size);
+}
+function paintBig(text, size){
+  $("num").textContent = text; $("shadow").textContent = text;
+  $("num").setAttribute("font-size", size); $("shadow").setAttribute("font-size", size);
+}
+
+const SERVICE = [
+  "Каждый день вычитает себя сам.",
+  "Дом никуда не денется.",
+  "Звонок домой стоит больше, чем кажется.",
+  "Сегодня прошёл. Этого уже не отнять.",
+  "Терпение тоже навык.",
+  "Береги силы. Они пригодятся и после.",
+  "Один день. Только один.",
+  "Время идёт, даже когда стоишь на месте.",
+  "Дембель ближе, чем вчера.",
+  "Тебя ждут.",
+  "Не считай всё сразу. Считай сегодняшний.",
+  "Бывает тяжело. Это тоже проходит.",
+  "Каждое утро минус один.",
+  "Ты справляешься.",
+  "Ещё чуть-чуть, и сам себе удивишься."
+];
+
+function retDate(){
+  try { const v = localStorage.getItem("returnDate"); if (v) return v; } catch(e){}
+  const d = parse(target); d.setFullYear(d.getFullYear() + 1);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function drawStrokes(count){
+  const g = $("sg"); g.innerHTML = "";
+  const dense = count > 60;
+  g.setAttribute("filter", dense ? "url(#bristleS)" : "url(#bristle)");
+  const perRow = dense ? 31 : 15, pitch = dense ? 10.4 : 22, rowH = dense ? 30 : 58;
+  const rows = Math.max(1, Math.ceil(count / perRow));
+  $("strokes").setAttribute("viewBox", "0 0 330 " + rows * rowH);
+  const tones = ["#8f897c", "#6b6558", "#a39a84", "#4f4a41"];
+  for (let i = 0; i < count; i++) {
+    const r = Math.floor(i / perRow), c = i % perRow;
+    const h = dense ? 14 + rnd(i + 1) * 10 : 30 + rnd(i + 1) * 22;
+    const w = dense ? 4 + rnd(i + 7) * 2 : 10 + rnd(i + 7) * 4;
+    const x = 4 + c * pitch + rnd(i + 3) * (dense ? 1.5 : 4);
+    const y = r * rowH + (rowH - (dense ? 3 : 4) - h);
+    const el = document.createElementNS(NS, "rect");
+    el.setAttribute("x", x); el.setAttribute("y", y);
+    el.setAttribute("width", w); el.setAttribute("height", h); el.setAttribute("rx", dense ? 2 : 4);
+    el.setAttribute("transform", "rotate(" + ((rnd(i + 5) - .5) * 14).toFixed(1) + " " + (x + w/2) + " " + (y + h/2) + ")");
+    el.setAttribute("fill", i === 0 ? "#d6a63a" : tones[i % tones.length]);
+    el.setAttribute("opacity", i === 0 ? 1 : (.6 + rnd(i + 9) * .35).toFixed(2));
+    g.appendChild(el);
+  }
+}
+
+function extras(days, now, from, goal, phase){
+  const on = days > 0;
+  $("facts").style.display = on ? "flex" : "none";
+  $("prog").style.display = on ? "flex" : "none";
+  const span = Math.max(1, (goal - from) / 864e5);
+  const done = Math.min(1, Math.max(0, (startOfDay(now) - from) / 864e5 / span));
+  const p = phase === 1 ? done : 1 - done;
+  $("pct").textContent = (phase === 1 ? "Прошло " : "Прослужено ") + Math.round(done * 100) + "%";
+  $("pbar").setAttribute("width", (320 * done).toFixed(1));
+  const fig = document.querySelector(".fig");
+  fig.style.transform = "rotate(" + (p * 12).toFixed(1) + "deg)";
+  fig.style.filter = "brightness(" + (1 - p * 0.5).toFixed(2) + ")";
+  const list = phase === 1 ? PHRASES : SERVICE;
+  let ph;
+  if (days > 0) ph = list[(days - 1) % list.length];
+  else if (days === 0) ph = phase === 1 ? "Он настал. Иди спокойно." : "Дембель. Добро пожаловать домой.";
+  else ph = "Дома. Теперь время твоё.";
+  $("phrase").textContent = ph;
+  if (!on) return;
+  let sat = 0, sun = 0, fri = 0;
+  for (let i = 0; i < days; i++) {
+    const g = new Date(now.getFullYear(), now.getMonth(), now.getDate() + i).getDay();
+    if (g === 6) sat++; else if (g === 0) sun++; else if (g === 5) fri++;
+  }
+  const w = Math.floor(days / 7), r = days % 7, parts = [];
+  if (w) parts.push(w + " " + plural(w, ["неделя","недели","недель"]));
+  if (r) parts.push(r + " " + plural(r, ["день","дня","дней"]));
+  $("f-weeks").textContent = parts.join(" и ");
+  $("f-wk").textContent = "Пятниц: " + fri + ", суббот: " + sat + ", воскресений: " + sun;
+}
+
+function render(){
+  const now = new Date(), today = startOfDay(now);
+  const dep = parse(target), rd = retDate(), ret = parse(rd);
+  const d1 = Math.round((dep - today) / 864e5);
+  let phase = 1, days = d1, goal = dep, from = parse(START_DEFAULT);
+  if (d1 < 0) { phase = 2; goal = ret; from = dep; days = Math.round((ret - today) / 864e5); }
+
+  const fmt = d => d.toLocaleDateString("ru-RU", {day:"numeric", month:"long", year:"numeric"});
+  $("when").textContent = phase === 1 ? "Уход: " + fmt(dep) : "Дембель: " + fmt(ret);
+  if ($("date").value !== target) $("date").value = target;
+  if ($("ret").value !== rd) $("ret").value = rd;
+
+  if (days > 0) {
+    const ms = goal - now;
+    $("h").textContent = Math.floor(ms / 36e5);
+    $("m").textContent = String(Math.floor(ms / 6e4) % 60).padStart(2, "0");
+    $("s").textContent = String(Math.floor(ms / 1e3) % 60).padStart(2, "0");
+    const hrs = Math.floor(ms / 36e5);
+    $("f-hours").textContent = "Это " + hrs + " " + plural(hrs, ["час","часа","часов"]);
+  }
+  const key = target + "|" + rd + "|" + phase + "|" + days;
+  if (shown === key) return;
+  shown = key;
+
+  $("clock").style.display = days > 0 ? "flex" : "none";
+  if (days > 0) {
+    $("lead").textContent = phase === 1 ? "До ухода осталось" : "До дембеля осталось";
+    setBig(String(days), String(days).length <= 2 ? 200 : 150);
+    $("unit").textContent = phase === 1
+      ? plural(days, ["день свободы","дня свободы","дней свободы"])
+      : plural(days, ["день службы","дня службы","дней службы"]);
+  } else if (days === 0) {
+    $("lead").textContent = "Сегодня";
+    setBig(phase === 1 ? "Всё." : "Дом.", phase === 1 ? 130 : 150);
+    $("unit").textContent = phase === 1 ? "Тот самый день" : "Дембель";
+  } else {
+    const n = Math.abs(days);
+    $("lead").textContent = "Ты дома уже";
+    setBig(String(n), n < 100 ? 200 : 150);
+    $("unit").textContent = plural(n, ["день","дня","дней"]);
+  }
+  drawStrokes(Math.max(days, 0));
+  extras(days, now, from, goal, phase);
+}
+
+function tap(){
+  if (tapT) return;
+  paintBig("⏳", 150);
+  $("numsvg").classList.add("shake");
+  tapT = setTimeout(() => {
+    tapT = null;
+    $("numsvg").classList.remove("shake");
+    paintBig(cur.t, cur.s);
+  }, 2200);
+}
+$("numsvg").addEventListener("click", tap);
+$("numsvg").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tap(); } });
+
+$("date").addEventListener("change", e => {
+  if (!e.target.value) return;
+  target = e.target.value; saveDate(target); render();
+});
+$("ret").addEventListener("change", e => {
+  if (!e.target.value) return;
+  try { localStorage.setItem("returnDate", e.target.value); } catch(err){}
+  render();
+});
+
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  const tp = $("tp"); let k = 0;
+  setInterval(() => { k = (k + 1) % 9; tp.setAttribute("seed", String(11 + k * 3)); }, 170);
+}
+
+render();
+setInterval(render, 1000);
+</script>
+</body>
+</html>
