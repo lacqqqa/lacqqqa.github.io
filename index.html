@@ -17,6 +17,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Дни свободы">
 <title>Дни свободы</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,800;1,400;1,500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -81,10 +83,22 @@ input{-webkit-user-select:auto;user-select:auto}
 .mbox p{font-style:italic;color:var(--ash)}
 .mrow{display:flex;gap:22px}
 .mrow button{font:inherit;font-style:italic;font-size:18px;color:var(--bone);background:transparent;border:1px solid var(--ash);border-radius:10px;padding:8px 16px}
+#fx{position:fixed;left:0;top:0;width:100%;height:100%;z-index:3;pointer-events:none}
+.row{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.cal{position:relative;width:86px;height:104px;flex:none;margin-left:auto;margin-right:4px;cursor:pointer;filter:drop-shadow(0 8px 10px rgba(0,0,0,.55));-webkit-tap-highlight-color:transparent}
+.leaf{position:absolute;inset:0;background:#d6c9a8;color:#1c1a17;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-3deg);clip-path:polygon(0 7%,9% 2%,18% 8%,27% 3%,37% 8%,47% 3%,57% 8%,68% 2%,78% 7%,89% 3%,100% 7%,100% 100%,0 100%)}
+.leaf[hidden]{display:none}
+.leaf small{font-size:11px;letter-spacing:.14em;font-weight:500;margin-top:6px}
+.leaf b{font-size:46px;font-weight:800;line-height:1}
+.leaf em{font-size:13px;color:#4a443a}
+.leaf.tear{transform-origin:0 0;animation:tear 1.3s ease-in forwards}
+@keyframes tear{0%{transform:rotate(-3deg)}22%{transform:rotate(-16deg) translate(-3px,-8px)}100%{transform:translate(150px,-460px) rotate(70deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.leaf.tear{animation:none;opacity:0}}
 </style>
 </head>
 <body>
 <canvas id="paint" aria-hidden="true"></canvas>
+<canvas id="fx" aria-hidden="true"></canvas>
 <svg class="defs" aria-hidden="true">
   <filter id="paint" x="-10%" y="-10%" width="120%" height="120%">
     <feTurbulence type="fractalNoise" baseFrequency="0.03 0.055" numOctaves="3" seed="4" result="n"/>
@@ -132,11 +146,14 @@ input{-webkit-user-select:auto;user-select:auto}
 
   <p class="phrase" id="phrase"></p>
 
+  <div class="row">
   <section class="clock" id="clock" aria-hidden="true">
     <div><b id="h">0</b><span>часов</span></div>
     <div><b id="m">00</b><span>минут</span></div>
     <div><b id="s">00</b><span>секунд</span></div>
   </section>
+  <div class="cal" id="cal" role="button" tabindex="0" aria-label="Листок календаря"><div class="leaf" id="leafU"><small></small><b></b><em></em></div><div class="leaf" id="leafT" hidden><small></small><b></b><em></em></div></div>
+  </div>
 
   <section>
     <p class="cap">Каждый мазок — один день. Светлый — сегодня.</p>
@@ -283,7 +300,7 @@ function extras(days, now, from, goal, phase){
   fig.style.filter = "brightness(" + (1 - p * 0.5).toFixed(2) + ")";
   const list = phase === 1 ? PHRASES : SERVICE;
   let ph;
-  if (days > 0) ph = list[(days - 1) % list.length];
+  if (days > 0) ph = (phase === 1 ? MS1 : MS2)[days] || list[(days - 1) % list.length];
   else if (days === 0) ph = phase === 1 ? "Он настал. Иди спокойно." : "Дембель. Добро пожаловать домой.";
   else ph = "Дома. Теперь время твоё.";
   $("phrase").textContent = ph;
@@ -301,6 +318,7 @@ function extras(days, now, from, goal, phase){
 }
 
 function render(){
+  checkLeaf();
   const now = new Date(), today = startOfDay(now);
   const dep = parse(target), rd = retDate(), ret = parse(rd);
   const d1 = Math.round((dep - today) / 864e5);
@@ -343,12 +361,16 @@ function render(){
   }
   drawStrokes(Math.max(days, 0));
   extras(days, now, from, goal, phase);
+  msNow = days > 0 && !!(phase === 1 ? MS1 : MS2)[days];
+  if (msNow) setTimeout(burst, renderedOnce ? 300 : 2000);
+  renderedOnce = true;
 }
 
 function tap(){
   if (tapT) return;
   paintBig("⏳", 150);
   swish(.07, .45);
+  rain(10); if (msNow) burst();
   $("numsvg").classList.add("shake");
   tapT = setTimeout(() => {
     tapT = null;
@@ -390,7 +412,7 @@ function drawBase(){
     const iw = bgImg.naturalWidth * k, ih = bgImg.naturalHeight * k;
     px.drawImage(bgImg, -(iw - W) * 0.18, -(ih - H) * 0.5, iw, ih);
   }
-  px.fillStyle = "rgba(12,11,9,.5)"; px.fillRect(0, 0, W, H);
+  px.fillStyle = "rgba(12,11,9," + nightA().toFixed(2) + ")"; px.fillRect(0, 0, W, H);
 }
 function fitCanvas(){
   pc.width = Math.round(innerWidth * DPR); pc.height = Math.round(innerHeight * DPR);
@@ -557,6 +579,140 @@ $("share").addEventListener("click", async () => {
   const a = document.createElement("a"); a.href = $("cardimg").src; a.download = "dni-svobody.jpg"; a.click();
 });
 $("close").addEventListener("click", () => { $("modal").hidden = true; });
+
+
+/* ---------- время суток ---------- */
+function nightA(){
+  const n = new Date(), h = n.getHours() + n.getMinutes() / 60;
+  const L = (Math.cos((h - 13) / 24 * 2 * Math.PI) + 1) / 2;
+  return .66 - .26 * L;
+}
+
+/* ---------- круглые даты ---------- */
+const MS1 = {100: "Сотка. Дальше только короче.", 50: "Полсотни дней. Половина позади, половина впереди.", 10: "Десять. Теперь можно считать по пальцам.", 1: "Завтра. Сегодня последний свободный день."};
+const MS2 = {100: "Сто дней до приказа.", 50: "Полсотни до дембеля.", 10: "Десять дней. Уже пахнет домом.", 1: "Последние сутки. Завтра домой."};
+let msNow = false, renderedOnce = false;
+
+/* ---------- отрывной календарь ---------- */
+const ymd = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+let leafDay = null;
+try { leafDay = localStorage.getItem("lastSeen"); } catch(e){}
+function leafFill(el, d){
+  el.querySelector("small").textContent = d.toLocaleDateString("ru-RU", {month: "long"}).toUpperCase();
+  el.querySelector("b").textContent = d.getDate();
+  el.querySelector("em").textContent = d.toLocaleDateString("ru-RU", {weekday: "long"});
+}
+function tearLeaf(oldD, delay){
+  const t = $("leafT");
+  leafFill(t, oldD); t.hidden = false; t.classList.remove("tear"); void t.offsetWidth;
+  t.style.animationDelay = delay + "s"; t.classList.add("tear");
+  t.onanimationend = () => { t.hidden = true; t.classList.remove("tear"); };
+  if (reduced) setTimeout(() => { t.hidden = true; }, 300);
+}
+function checkLeaf(){
+  const now = new Date(), td = ymd(now);
+  if (leafDay === td) return;
+  const prev = leafDay; leafDay = td;
+  leafFill($("leafU"), now);
+  try { localStorage.setItem("lastSeen", td); } catch(e){}
+  if (prev) tearLeaf(parse(prev), renderedOnce ? 0 : 1.2);
+}
+$("cal").addEventListener("click", () => { const y = new Date(); y.setDate(y.getDate() - 1); tearLeaf(y, 0); swish(.05, .4); });
+
+/* ---------- эффекты: силуэты, взрыв, след пальца ---------- */
+const fx = $("fx"), fc = fx.getContext("2d");
+function fitFx(){ fx.width = Math.round(innerWidth * DPR); fx.height = Math.round(innerHeight * DPR); }
+fitFx(); addEventListener("resize", fitFx);
+let parts = [], trail = [], raf = 0, tPrev = 0, tl = null;
+const PAL = ["#b98a2e", "#8f897c", "#6b6558", "#d6c9a8", "#a07a28", "#4f4a41", "#6e231a"];
+function star(c, x, y, r){
+  c.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .42 : r; c.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+  c.closePath(); c.fill();
+}
+const SIL = [
+  c => { // автомат
+    c.beginPath(); c.moveTo(-30,-6); c.lineTo(22,-6); c.lineTo(22,4); c.lineTo(-30,4); c.closePath(); c.fill();
+    c.fillRect(22,-3,42,3); c.fillRect(22,-8,24,10);
+    c.beginPath(); c.moveTo(-30,-6); c.lineTo(-64,-1); c.lineTo(-62,9); c.lineTo(-30,4); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(-6,4); c.lineTo(7,4); c.lineTo(17,27); c.lineTo(6,29); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(-18,4); c.lineTo(-8,4); c.lineTo(-10,17); c.lineTo(-19,17); c.closePath(); c.fill();
+  },
+  c => { // граната
+    c.beginPath(); c.ellipse(0,4,13,17,0,0,7); c.fill(); c.fillRect(-5,-16,10,8);
+    c.beginPath(); c.moveTo(5,-15); c.lineTo(21,-8); c.lineTo(19,7); c.lineTo(13,3); c.lineTo(15,-6); c.closePath(); c.fill();
+    c.lineWidth = 2.5; c.beginPath(); c.arc(-11,-13,5,0,7); c.stroke();
+  },
+  c => { // погон со звёздами
+    c.beginPath(); c.moveTo(-14,-30); c.lineTo(14,-30); c.lineTo(14,24); c.lineTo(0,34); c.lineTo(-14,24); c.closePath(); c.fill();
+    c.save(); c.fillStyle = "#d6c9a8"; for (const y of [-16,-2,12]) star(c, 0, y, 6); c.restore();
+  },
+  c => { // шеврон
+    c.beginPath(); c.moveTo(-20,-24); c.lineTo(20,-24); c.lineTo(20,6); c.lineTo(0,28); c.lineTo(-20,6); c.closePath(); c.fill();
+    c.save(); c.strokeStyle = "#d6c9a8"; c.lineWidth = 4; c.beginPath();
+    c.moveTo(-13,-8); c.lineTo(0,5); c.lineTo(13,-8); c.moveTo(-13,-17); c.lineTo(0,-4); c.lineTo(13,-17); c.stroke(); c.restore();
+  }
+];
+const pick1 = a => a[Math.floor(Math.random() * a.length)];
+function go(){ if (!raf) { tPrev = performance.now(); raf = requestAnimationFrame(loop); } }
+function rain(n){
+  if (reduced) return;
+  for (let i = 0; i < n; i++) parts.push({k: "s", draw: pick1(SIL), col: pick1(PAL), x: Math.random() * innerWidth, y: -60,
+    vy: 110 + Math.random() * 90, sw: Math.random() * 6.28, swa: 10 + Math.random() * 22, rot: (Math.random() - .5) * 1.2,
+    vr: (Math.random() - .5) * .9, sc: .9 + Math.random() * .9, age: 0, delay: Math.random() * 2.5});
+  go();
+}
+function burst(){
+  if (reduced) return;
+  const r = $("numsvg").getBoundingClientRect(), cx = r.left + r.width * .35, cy = r.top + r.height * .5;
+  for (let i = 0; i < 46; i++) { const a = Math.random() * 6.283, v = 220 + Math.random() * 420;
+    parts.push({k: "b", x: cx, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, rot: a, vr: (Math.random() - .5) * 6,
+      len: 26 + Math.random() * 50, wd: 7 + Math.random() * 7, col: pick1(PAL.slice(0, 5)), age: 0, life: 1.1 + Math.random() * .7, delay: 0}); }
+  swish(.08, .5); go();
+}
+function loop(t){
+  const dt = Math.min(.05, (t - tPrev) / 1000); tPrev = t;
+  fc.clearRect(0, 0, fx.width, fx.height); fc.save(); fc.scale(DPR, DPR);
+  const H = innerHeight;
+  parts = parts.filter(p => {
+    p.age += dt; if (p.age < p.delay) return true;
+    const a0 = p.age - p.delay;
+    if (p.k === "s") {
+      p.y += p.vy * dt; p.rot += p.vr * dt;
+      if (p.y > H * .96) return false;
+      const fadeOut = 1 - Math.min(1, Math.max(0, (p.y - H * .55) / (H * .4)));
+      fc.save(); fc.translate(p.x + Math.sin(p.sw + a0 * 1.3) * p.swa, p.y); fc.rotate(p.rot); fc.scale(p.sc, p.sc);
+      fc.globalAlpha = .8 * Math.min(1, a0 / .6) * fadeOut;
+      fc.fillStyle = fc.strokeStyle = p.col; fc.shadowColor = p.col; fc.shadowBlur = 6; p.draw(fc); fc.restore();
+      return true;
+    }
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= .965; p.vy *= .965; p.rot += p.vr * dt;
+    const k = a0 / p.life; if (k >= 1) return false;
+    fc.save(); fc.translate(p.x, p.y); fc.rotate(p.rot); fc.globalAlpha = (1 - k) * .9; fc.fillStyle = p.col;
+    fc.beginPath(); if (fc.roundRect) fc.roundRect(-p.len / 2, -p.wd / 2, p.len, p.wd, p.wd / 2); else fc.rect(-p.len / 2, -p.wd / 2, p.len, p.wd);
+    fc.fill(); fc.restore();
+    return true;
+  });
+  const now = performance.now();
+  trail = trail.filter(q => now - q.t < 900);
+  for (const q of trail) {
+    const k = (now - q.t) / 900;
+    fc.save(); fc.globalAlpha = (1 - k) * .35; fc.strokeStyle = "#d6c9a8"; fc.lineCap = "round"; fc.lineWidth = 14 * (1 - k * .5);
+    fc.beginPath(); fc.moveTo(q.x0, q.y0); fc.lineTo(q.x, q.y); fc.stroke(); fc.restore();
+  }
+  fc.restore();
+  if (parts.length || trail.length) raf = requestAnimationFrame(loop);
+  else { raf = 0; fc.clearRect(0, 0, fx.width, fx.height); }
+}
+addEventListener("pointermove", e => {
+  if (reduced || (e.target.closest && e.target.closest(".modal"))) return;
+  const x = e.clientX, y = e.clientY;
+  if (tl && Math.hypot(x - tl.x, y - tl.y) < 8) return;
+  if (tl) { trail.push({x0: tl.x, y0: tl.y, x, y, t: performance.now()}); go(); }
+  tl = {x, y};
+});
+["pointerup", "pointercancel", "pointerleave"].forEach(ev => addEventListener(ev, () => { tl = null; }));
+if (!reduced) setTimeout(() => rain(16), 1500);
 
 render();
 setInterval(render, 1000);
